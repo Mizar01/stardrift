@@ -1,0 +1,553 @@
+<html>
+<head>
+      <script src="ace3/lib/jquery-1.8.2.min.js"></script>
+      <script src="ace3/lib/three.min.52.js"></script>
+      <script src="ace3/lib/js/shaders/CopyShader.js"></script>
+      <script src="ace3/lib/js/postprocessing/RenderPass.js"></script>
+      <script src="ace3/lib/js/postprocessing/BloomPass.js"></script>
+      <script src="ace3/lib/js/postprocessing/ShaderPass.js"></script>
+      <script src="ace3/lib/js/postprocessing/EffectComposer.js"></script>
+
+      <script src="ace3/lib/js/shaders/HueSaturationShader.js"></script>
+      <script src="ace3/lib/js/shaders/ColorifyShader.js"></script>
+      <script src="ace3/lib/js/shaders/FilmShader.js"></script>
+      <script src="ace3/lib/js/postprocessing/FilmPass.js"></script>
+      <script src="ace3/lib/js/shaders/DotScreenShader.js"></script>
+      <script src="ace3/lib/js/postprocessing/DotScreenPass.js"></script>
+
+      <script src="ace3/lib/js/postprocessing/MaskPass.js"></script>
+      <script src="ace3/ace3_standalone_final.52.js"></script>
+      <link rel="stylesheet" type="text/css" href="ace3/ace3.css" />
+
+      <script src="game/actors/selectors.js"></script>
+      <script src="game/actors/sectors.js"></script>
+      <script src="game/actors/units.js"></script>
+      <script src="game/actors/others.js"></script>
+      <script src="game/actors/buttons.js"></script>
+      <script src="game/actors/Unit2.js"></script>
+      <script src="game/logics.js"></script>
+      <script src="game/objects.js"></script>   
+      <script src="game/maps.js"></script>   
+      <script src="game/rpsz.js"></script>
+      <link href='http://fonts.googleapis.com/css?family=Finger+Paint' rel='stylesheet' type='text/css'>
+      <link href='game/style.css' rel='stylesheet' type='text/css'>
+      <script>
+      	$(document).ready(function() {
+   		    game_init()
+		      game_run()
+		    });
+      </script>
+      <script id="fragmentShader2" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float time;
+              uniform vec2 randPos;
+              uniform vec2 randPos2;
+              uniform float animTime;
+              uniform float animTimeMax;
+              varying vec2 vUv;
+
+              float rand(vec2 n)
+              {
+                return 0.5 + 0.5 * 
+                   fract(sin(dot(n.xy, vec2(12.9898, 78.233)))* 43758.5453);
+              }
+
+              bool inSquare(vec2 p, vec2 v, float range) {
+                if (abs(p.x - v.x) < range && abs(p.y - v.y) < range) {
+                  return true;
+                }
+                return false;
+              }
+
+              void main(void) {
+                float cycle = mod((time * 100.0), 1000.0) / 1000.0; //number between 0 and 1 , cyclical in theory
+                float cAngle = cycle * 3.1416;
+                float opacity = 0.2;
+                vec3 c = vec3(abs(cos(cAngle)), 0.0, sin(cycle * 3.1416));
+                vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+                float range = 0.1;
+
+                float perc = (animTimeMax - animTime) / animTimeMax;
+
+                if (inSquare(p, randPos, range)) {
+                  c.x = perc;
+                  c.y = perc + cycle;
+                  c.z = perc;
+                  opacity = 1.0;
+                }else {
+                  float perc2 = perc + 0.5;
+                  if (inSquare(p, randPos2, range)) {
+                    if (perc2 > 1.0) perc2 = perc2 - 1.0;
+                    c.x = perc2 + cycle;
+                    c.y = perc2;
+                    c.z = perc2;
+                    opacity = 1.0;
+                  }
+                }
+
+                gl_FragColor = vec4(c, opacity);
+              }
+
+      </script>
+      <script id="fragmentShaderSpawner" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float time;
+              uniform float dist;
+              uniform float tickness;
+              uniform vec3 color;
+              varying vec2 vUv;
+
+              void main(void) {
+                float cycle = mod((time * 100.0), 1000.0) / 1000.0; //number between 0 and 1 , cyclical in theory
+                vec3 c = vec3(0.0, 0.0, 0.0);
+                float opacity = 0.0;
+                vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+
+                float radius = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
+                if (radius <= 0.8 && mod( (radius - cycle * 2.0) * 30.0, dist) <= tickness) {
+                  c = color;
+                  opacity = 1.0;
+                }
+
+                gl_FragColor = vec4(c, opacity);
+              }
+
+      </script>
+      <script id="fragmentShaderTower" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float time;
+              uniform float dist;
+              uniform float tickness;
+              uniform vec3 color;
+              varying vec2 vUv;
+              uniform sampler2D texture1;
+
+              void main(void) {
+                float cycle = mod((time * 100.0), 1000.0) / 1000.0; //number between 0 and 1 , cyclical in theory
+                gl_FragColor = texture2D(texture1, vUv);
+                float th = 0.80;
+                if (gl_FragColor.x > th && gl_FragColor.y > th && gl_FragColor.z > th) {
+                  gl_FragColor = vec4(color, 1.0);
+                }
+                //gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+              }
+
+      </script>
+      <script id="fragmentShaderRock" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float time;
+              uniform int unitLevel;
+              uniform vec3 color;
+              varying vec2 vUv;
+
+              void main(void) {
+                float speed = 400.0;
+                float cycle = mod((time * speed), 1000.0) / 1000.0; //number between 0 and 1 , cyclical in theory
+                vec3 c = color;
+                float opacity = 1.0;
+                vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+
+                float pivot1 = cycle * 2.0 - 1.0;
+                float pivot2 = (1.0 - cycle) * 2.0 - 1.0;
+                //float pivot2 = pivot1 + 1.0;
+                //if (pivot2 > 1.0) {
+                //  pivot2 = pivot1 - 1.0;
+                //}
+                //if (abs(pivot1 - p.x) < 0.04 || abs(pivot2 - p.x) < 0.02) {
+                //  c = vec3(0.0, 0.0, 0.0);
+                //}
+                float d = abs(pivot1 - p.y);
+                if (d < 0.2) {
+                  // float valPerc = d / 0.3; //value of the distance in perc (0 --- 1), distance mac = 1
+                  // float cContr = 0.0;
+                  // float wContr = 0.0;
+                  // if (valPerc > 0.5) {
+                  //     cContr = (valPerc - 0.5) / 0.5;
+                  // }else {
+                  //     wContr = (1.0 - valPerc / 0.5);
+                  // }
+                  vec3 lcol;
+                  if (unitLevel == 1) lcol = vec3(0.2, 0.9, 0.2);
+                  if (unitLevel == 2) lcol = vec3(1.0 , 1.0, 1.0);
+                  if (unitLevel >= 3) lcol = vec3(1.0, 1.0, 0.1);
+                  
+                  c = lcol;
+                  // if (c.x > 1.0) c.x = 1.0;
+                  // if (c.y > 1.0) c.y = 1.0;
+                  // if (c.z > 1.0) c.z = 1.0;
+
+                }
+                if (abs(pivot2 - p.y) < 0.06) {
+                  c = vec3(1.0, 0.6, 9.0);
+                }               
+
+                gl_FragColor = vec4(c, opacity);
+              }
+
+      </script>
+
+      <script id="fragmentShader_DefaultSector" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float cycles;
+              uniform vec3 color;
+              varying vec2 vUv;
+
+              void main(void) {
+                float cycle = mod(cycles, 1000.0) / 1000.0; //number between 0 and 1 , cyclical in theory
+                float angle = 6.28 * cycle;
+                vec3 c = vec3(.0, .0, .0);
+                vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+                float opacity = 1.0;
+                float border = 0.06;
+                if (p.x < (-1.0 + border) || p.x > (1.0 - border) || p.y < (-1.0 + border) || p.y > (1.0 - border)) {
+                  c = color;
+                  opacity = 0.1 + abs(sin(angle));
+                }
+                
+                if (opacity > 1.0) {
+                  opacity = 1.0;
+                }
+                gl_FragColor = vec4(c, opacity);
+              }
+
+      </script>
+
+      <script id="fragmentShader_NewFlagSector" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float cycles;
+              uniform vec3 color;
+              varying vec2 vUv;
+
+              void main(void) {
+                float cycle = sin(cycles/100.0);
+                float angle = mod(cycles * 0.001, 6.28);
+                vec3 c = vec3(.0, .0, .0);
+                vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+                float distP2 = sqrt(p.x * p.x + p.y * p.y);
+
+                c = vec3(abs(sin(angle)) * 0.3, 1.0/(distP2 * 3.0), abs(cos(angle)) * 0.3);
+                
+                float opacity = 1.0;
+                //if (opacity > 1.0) {
+                //  opacity = 1.0;
+                //}
+                gl_FragColor = vec4(c, opacity);
+              }
+
+      </script>
+
+      <script id="fragmentShader_NewFlagSector2" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float cycles;
+              uniform vec3 color;
+              varying vec2 vUv;
+              float rand(vec2 co){
+                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+              }
+
+              void main(void) {
+                vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+
+
+                float green = rand(vec2(1.0, 10000.0));
+
+                vec3 c = vec3(.0, green, .0);
+                
+                gl_FragColor = vec4(c, 1.0);
+              }
+
+      </script>
+
+      <script id="fragmentShader_hilight" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float cycles;
+              uniform float thickness;
+              uniform vec3 color;
+              varying vec2 vUv;
+
+              /**
+              * always return the arco tangent between 0 and 2*PI
+              */
+              float atan2(float y, float x) {
+                float pi = 3.1416;
+                float at = atan(y, x); //atan in this use returns a -PI, +PI range
+                if (y < 0.0) {
+                  return at + pi * 2.0;
+                }
+                // normally returns the atan value
+                return at;
+              }
+
+              void main(void) {
+                float pi = 3.1416;
+                float cycle = mod(cycles, 1000.0) / 1000.0; //number between 0 and 1 , cyclical in theory
+                float angle = pi * 2.0 * cycle;
+                float radiusMatch = 0.5 + sin(angle) * 0.05; 
+                float opacity = 0.0;
+                vec3 c = vec3(.0, .0, .0);
+                vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+                float radius = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
+                float pang = atan2(p.y, p.x) + angle;
+                if (pang > pi * 2.0) {
+                  pang -= pi * 2.0;
+                }
+                bool nodraw = ( (pang > 0.0 && pang < (pi * 0.33)) ||
+                                (pang > pi * .66 && pang < pi * 0.99) ||
+                                (pang > pi * 1.33 && pang < pi * 1.66)
+                              );
+
+                if (abs(radius - radiusMatch) < thickness && !nodraw) {
+                  c = color;
+                  opacity = 1.0;
+                }
+                gl_FragColor = vec4(c, opacity);
+              }
+
+      </script>
+
+      <script id="fragmentShader1" type="x-shader/x-fragment">
+              uniform vec2 resolution;
+              uniform float time;
+
+              varying vec2 vUv;
+
+              void main(void)
+              {
+                      float cycle = mod((time * 100.0), 1000.0) / 1000.0; //number between 0 and 1 , cyclical in theory
+                      vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+
+                      vec3 red = vec3(.9, .0, .0);
+                      vec3 white = vec3(1.0, 1.0, 1.0);
+                      vec3 blue = vec3(0.0, 0.0, 1.0);
+                      vec3 black = vec3 (.0, .0, .0);
+
+                      vec3 color = blue;
+                      vec2 cur1 = vec2(cos(cycle * 6.28), sin(cycle * 6.28));
+
+                      float eval = cur1.y + cur1.x;
+                      float eq = p.x * p.x + log(p.y);
+
+                      if (abs(eq) < 0.2) {
+                        //color = blue;
+                      }else {
+                        //color.x = eq - eval;
+                        //color.y = eq * 2.0;
+                        //color.z = eval / 4.0;
+                      }
+
+                      float radius = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
+                      //if (abs(radius - floor(radius)) < 0.1) {
+                      if (mod(radius * 30.0, 2.0) <= 0.2 ) {
+                        color = black;
+                      }
+
+                      //gl_FragColor=vec4(vec3(f*i/1.6,i/2.0+d/13.0,i)*d*p.x+vec3(i/1.3+d/8.0,i/2.0+d/18.0,i)*d*(1.0-p.x),1.0);
+                      gl_FragColor = vec4(color, 1.0);
+
+              }
+
+      </script>
+      <script id="vertexShader1" type="x-shader/x-fragment">
+        // Vertex shader that simulates water ripples around the center
+        varying vec2 vUv;
+        uniform float time;
+        void main(void) {
+            // the position should go from -1 to 1
+            // 1st version
+            //float newz = sin(time * 4.0 + position.x * 3.14) * 0.1 + sin(time * 4.0 + position.y * 3.14) * 0.1;
+            // 2nd version
+            float newz =    sin(time + (pow(position.x, 2.0) + pow(position.y, 2.0)) * 3.14) * 0.1;
+
+            vec3 newPos = vec3(position.x, position.y, newz);
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos,1.0);            
+        }
+      </script>
+
+      <script id="fragmentShaderElectric" type="x-shader/x-fragment">
+
+              // uniform vec2 resolution;
+              // uniform float time;
+
+              // varying vec2 vUv;
+
+              // void main(void)
+              // {
+              //   vec3 color = vec3(0.0, 0.0, 0.0);
+              //   float cycle = mod((time * 100.0), 1000.0) / 1000.0; //number between 0 and 1 , cyclical in theory
+              //   float cAngle = cycle * 3.1416;
+              //   vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
+
+              //   float d = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
+              //   if (d < 3.0) {
+              //     float cv = 2.5 - (d + abs(sin(cAngle)));
+              //     color.x = 1.0;
+              //     color.y = cv / 2.5;
+              //     //color.z = abs(0.5 - color.x);
+              //   }
+
+              //   gl_FragColor = vec4(color, 1.0);
+
+              // }
+
+              uniform float time;
+              uniform vec2 resolution;
+              uniform vec4 mouse;
+              uniform vec3 rgbMult;
+              varying vec2 vUv;
+
+              void main(void) {
+                  //SOURCE: 'Metablob' by Adrian Boeing (2011) (http://www.iquilezles.org/apps/shadertoy/)
+                  //the centre point for each blob
+                  vec2 move1;
+                  move1.x = cos(time)*0.3;
+                  move1.y = sin(time*1.5)*0.4;
+                  vec2 move2;
+                  move2.x = cos(time*2.0)*0.7;
+                  move2.y = sin(time*3.0)*0.4;
+                  vec2 move3;
+                  move3.x = cos(time*0.5)*0.4;
+                  move3.y = sin(time*0.8)*0.6;
+
+                  
+                  //screen coordinates
+                  vec2 p = -1.0 + 2.0 * vUv;
+                
+                  //radius for each blob
+                  float r1 =(dot(p-move1,p-move1))*8.0;
+                  float r2 =(dot(p+move2,p+move2))*16.0;
+                  float r3 =(dot(p+move3,p+move3))*24.0;
+
+                  //sum the meatballs
+                  float metaball =(1.0/r1+1.0/r2 + 1.0/r3);
+                  //alter the cut-off power
+                  float col = pow(metaball, 5.0);
+
+                  //set the output color
+                  if (col < 0.6) {
+                    gl_FragColor = vec4(col * rgbMult.x, 
+                                        max(0.1, col * 5.0) * rgbMult.y, 
+                                        col * rgbMult.z, 1.);
+                  }else {
+                    gl_FragColor = vec4(col * rgbMult.x, col/2.0 * rgbMult.y, 0.0, 1.0);
+                  }
+              }
+
+
+
+      </script>
+
+      <script id="fragmentShaderPlasma" type="x-shader/x-vertex">
+
+              uniform vec2 resolution;
+              uniform float time;
+              varying vec2 vUv;
+
+              void main(void) {
+                 // 'Plasma' by Viktor Korsun (2011) (http://www.iquilezles.org/apps/shadertoy/#)
+                 //float x = gl_FragCoord.x;
+                 //float y = gl_FragCoord.y;
+                 vec2 p = -1.0 + 2.0 * vUv;
+                 float x = p.x; float xr = x * resolution.x;
+                 float y = p.y; float yr = y * resolution.y;
+                 float mov0 = xr + yr + cos(sin(time)*2.)*100.+sin(xr/100.)*1000.;
+                 float mov1 = y / 0.2 + time;
+                 float mov2 = x / 0.2;
+                 float c1 = abs(sin(mov1+time)/2.+mov2/2.-mov1-mov2+time);
+                 float c2 = abs(sin(c1+sin(mov0/1000.+time)+sin(yr/40.+time)+sin((xr+yr)/100.)*3.));
+                 float c3 = abs(sin(c2+cos(mov1+mov2+c2)+cos(mov2)+sin(xr/1000.)));
+                 gl_FragColor = vec4( c1 ,c2 ,c3 / 2., 1.0);
+              }
+
+      </script>
+
+      <script id="vertexShaderGeneric" type="x-shader/x-vertex">
+
+              varying vec2 vUv;
+
+              void main()
+              {
+                      vUv = uv;
+                      vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+                      gl_Position = projectionMatrix * mvPosition;
+              }
+
+      </script>
+
+</head>
+<body>
+      <div id="shaders_container" style="display:none;">
+            <div id="simple_vertexShader">
+                  /**
+                    * Multiply each vertex by the
+                    * model-view matrix and the
+                    * projection matrix (both provided
+                    * by Three.js) to get a final
+                    * vertex position
+                    */
+                   void main() {
+                     gl_Position = projectionMatrix *
+                                   modelViewMatrix *
+                                   vec4(position,1.0);
+                   }
+            </div>
+            <div id="simple_fragmentShader">
+                  /**
+                    * Set the colour to a lovely pink.
+                    * Note that the color is a 4D Float
+                    * Vector, R,G,B and A and each part
+                    * runs from 0.0 to 1.0
+                    */
+                   void main() {
+                     gl_FragColor = vec4(1.0,  // R
+                                       0.0,  // G
+                                       1.0,  // B
+                                       1.0); // A
+                   }
+            </div>
+            <div id="test2_vertexShader">
+                  uniform float amplitude;
+                  attribute float displacement;
+                  varying vec3 vNormal;
+                  void main() {
+                    vNormal = normal;
+                    vec3 newPosition = position + normal * vec3(displacement * amplitude);
+                  
+                    gl_Position = projectionMatrix *
+                                  modelViewMatrix *
+                                  vec4(newPosition, 1.0);
+                  } 
+            </div>
+            <div id="test2_fragmentShader">
+                  // same name and type as VS
+                  varying vec3 vNormal;
+                  
+                  void main() {
+                  
+                    // calc the dot product and clamp
+                    // 0 -> 1 rather than -1 -> 1
+                    vec3 light = vec3(0.5,0.2,1.0);
+                  
+                    // ensure it's normalized
+                    light = normalize(light);
+                  
+                    // calculate the dot product of
+                    // the light to the vertex normal
+                    float dProd = max(0.0, dot(vNormal, light));
+                  
+                    // feed into our frag colour
+                    gl_FragColor = vec4(dProd, // R
+                                        dProd, // G
+                                        dProd, // B
+                                        1.0);  // A
+                  
+                  }                  
+            </div>
+            
+      </div> 
+      <audio id='main_theme'>
+        <!--<source src='media/up1.mp3' type="audio/mpeg"/>
+        Your Browser does not support HTML 5 Audio Element
+      </audio>
+</body>
+</html>
