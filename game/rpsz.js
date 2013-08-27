@@ -8,6 +8,8 @@ var gameManager = null // shortcut to ace3.defaultActorManager
 var hudManager = null
 var menuManager = null // shortcut to another ActorManager for menus
 var chooseMapMenuManager = null 
+var aboutManager = null
+var tutorialManager = null
 //var hlSelect = null //actor used to show selected items
 //var hlEnemy = null //actor used to show current selected enemy
 //var hlSector = null // actor used to show current selected sector
@@ -262,6 +264,16 @@ function game_choose() {
     chooseMapMenuManager.play()
 }
 
+function game_about() {
+    menuManager.pause()
+    aboutManager.play()
+}
+
+function game_tutorial() {
+    menuManager.pause()
+    tutorialManager.play()
+}
+
 function game_play(map, demoMode) {
     var demoMode = demoMode || false;
     if (map != undefined) {
@@ -270,6 +282,8 @@ function game_play(map, demoMode) {
     }
     menuManager.pause()
     chooseMapMenuManager.pause()
+    aboutManager.pause()
+    tutorialManager.pause()   
     gameManager.play()
     if (hudManager) {
         hudManager.play()
@@ -288,6 +302,8 @@ function game_pause() {
     }
     gameManager.pause()
     chooseMapMenuManager.pause()
+    aboutManager.pause()
+    tutorialManager.pause()
     menuManager.play()
 }
 
@@ -325,11 +341,11 @@ function menu_define() {
     playButton.css(standardButtonStyle)
     var demoButton = new ACE3.HTMLButton("DEMO", butX, initY + 80, butW, 20, function(){game_demo()}, zIndex + 1, fgColor, bgColor)
     demoButton.css(standardButtonStyle)
-    var tutorialButton = new ACE3.HTMLButton("Tutorial(TODO)", butX, initY + 120, butW, 20, "", zIndex + 1, fgColor, bgColor)
+    var tutorialButton = new ACE3.HTMLButton("Tutorial", butX, initY + 120, butW, 20, function(){game_tutorial()}, zIndex + 1, fgColor, bgColor)
     tutorialButton.css(standardButtonStyle)
     var optionButton = new ACE3.HTMLButton("OPTIONS(TODO)", butX, initY + 160, butW, 20, "", zIndex + 1, fgColor, bgColor)
     optionButton.css(standardButtonStyle)
-    var  aboutButton= new ACE3.HTMLButton("About(TODO)", butX, initY + 200, butW, 20, "", zIndex + 1, fgColor, bgColor)
+    var  aboutButton= new ACE3.HTMLButton("About", butX, initY + 200, butW, 20, function(){game_about()}, zIndex + 1, fgColor, bgColor)
     aboutButton.css(standardButtonStyle)    
     var resumeButton = new ACE3.HTMLButton("RESUME", butX, initY + 240, butW, 20, function(){game_play()}, zIndex + 1, "black", "yellow")
     resumeButton.css(standardButtonStyle)
@@ -372,9 +388,34 @@ function menu_define() {
     var  returnButton= new ACE3.HTMLButton("Cancel", butX, box.y + 200, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
     returnButton.addStyle(standardButtonStyle)    
     chooseMapMenuManager.registerActor(returnButton)    
-    ace3.actorManagerSet.push(chooseMapMenuManager)    
+    ace3.actorManagerSet.push(chooseMapMenuManager)  
+
+
+
+    // About Menu
+    var mgr = new ACE3.PureHTMLActorManager()
+    aboutManager = mgr
+    ace3.actorManagerSet.push(mgr)    
+    box = new ACE3.HTMLBox("About", "", mOffset.x, mOffset.y, bw, bh, zIndex, fgColor, bgColor)
+    box.addStyle(standardBoxStyle);
+    mgr.registerActor(box)
+    returnButton= new ACE3.HTMLButton("Cancel", butX, box.y + 200, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
+    returnButton.addStyle(standardButtonStyle)    
+    mgr.registerActor(returnButton)
+
+    // Tutorial Menu
+    mgr = new ACE3.PureHTMLActorManager()
+    tutorialManager = mgr
+    ace3.actorManagerSet.push(mgr)    
+    box = new ACE3.HTMLBox("Tutorial", "", mOffset.x, mOffset.y, bw, bh, zIndex, fgColor, bgColor)
+    box.addStyle(standardBoxStyle);
+    mgr.registerActor(box)
+    returnButton= new ACE3.HTMLButton("Cancel", butX, box.y + 200, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
+    returnButton.addStyle(standardButtonStyle)    
+    mgr.registerActor(returnButton) 
 
 }
+
 
 
 GameUtils = {
