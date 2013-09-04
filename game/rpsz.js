@@ -396,21 +396,49 @@ function menu_define() {
     var mgr = new ACE3.PureHTMLActorManager()
     aboutManager = mgr
     ace3.actorManagerSet.push(mgr)    
-    box = new ACE3.HTMLBox("About", "", mOffset.x, mOffset.y, bw, bh, zIndex, fgColor, bgColor)
+    var htmlText = "StarDrift<br/>Drones gone Mad<br/>by Mizar (2013)<br/>" +
+                   "<a href='http://www.linkedin.com/pub/michele-zanarotti/37/a50/658'>Linkedin Profile</a>"+
+                   "<!--<a href=''>Facebook Profile</a>-->"+
+                   "<br/><br/>powered by<br/><a href='https://github.com/Mizar01/ACE3'>ACE3 engine</a>"
+
+    box = new ACE3.HTMLBox("About", htmlText, mOffset.x, mOffset.y, bw, bh, zIndex, fgColor, bgColor)
     box.addStyle(standardBoxStyle);
     mgr.registerActor(box)
-    returnButton= new ACE3.HTMLButton("Cancel", butX, box.y + 200, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
+    returnButton= new ACE3.HTMLButton("Cancel", butX, box.y + 230, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
     returnButton.addStyle(standardButtonStyle)    
     mgr.registerActor(returnButton)
 
     // Tutorial Menu
     mgr = new ACE3.PureHTMLActorManager()
     tutorialManager = mgr
-    ace3.actorManagerSet.push(mgr)    
-    box = new ACE3.HTMLBox("Tutorial", "", mOffset.x, mOffset.y, bw, bh, zIndex, fgColor, bgColor)
+    ace3.actorManagerSet.push(mgr)
+    var htmlStyle = "style='font-size:0.8em;font-family:Arial;'"
+    var br = "<br/>"
+    var htmlText =  "<div " + htmlStyle + ">" +
+                    "Welcome to StarDrift, as for now no real tutorial and story here... " + 
+                    " The game is a fast paced RTS where you have blue drones against red drones." + 
+                    "Here you have to conquer factories (rippling circles) and towers to vanquish your enemy" + 
+                    " paying attention to resources to spend in upgrades for your drones." + br +
+                    "Drones are of three types based on shape of Rock, Paper and Scissors. When in combat, at " +
+                    " the same upgrade level, life and firepower they will lose or win based on the classic game rule" +
+                    br + br + " INTERFACE " + br +
+                    "Arrow keys / SHIFT / CTRL : move/zoom on the map" + br +
+                    "Click or Drag area on blue units: select your units" + br + 
+                    "Click on terrain : move selected units" + br +
+                    "Click on enemy : attack with selected units" + br + 
+                    "Click on towers or factories : conquer the sector with selected units" + br + br + 
+                    "You can upgrade units by selecting and press [UP] button. " + br +
+                    "At some time you can neutralize enemy random tower with a satellite shot [SS]" + br +
+                    "Increase the maximum number of drones you can have with [+1] button" + br +
+                    br + "HINTS" + br +
+                    "Lava like tiles will slow you down. " + br +
+                    "Factories will produce random units of the owning team, as fast as you have less units. " +
+                    "</div>"
+
+    box = new ACE3.HTMLBox("Tutorial", htmlText, mOffset.x - bw * 2, mOffset.y, bw * 4, bh + 70, zIndex, fgColor, bgColor)
     box.addStyle(standardBoxStyle);
     mgr.registerActor(box)
-    returnButton= new ACE3.HTMLButton("Cancel", butX, box.y + 200, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
+    returnButton= new ACE3.HTMLButton("Cancel", butX + bw, box.y + bh + 50, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
     returnButton.addStyle(standardButtonStyle)    
     mgr.registerActor(returnButton) 
 

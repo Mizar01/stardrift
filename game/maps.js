@@ -23,8 +23,7 @@ function loadMap(mapName) {
 		            "--mm-mm---mm--"+
 		            "----mmm-------"+
 		            "----mmm-------"+
-		            "--------------" 
-		            ;
+		            "--------------";
 		break;
 
 	case "longway":
@@ -158,7 +157,7 @@ function loadMap(mapName) {
 					"----------mmmm--------"+
 					"f--------------------f";
 		game_spawn_units_array=new Array(	"p1,rock,3,3","p1,paper,3,3","p1,rock,3,3","p1,scissors,3,3",
-											"p2,rock,17,13","p2,scissors,17,13");
+											"p2,rock,17,12","p2,scissors,17,12");
 		break;	
 	default:
 		//none
