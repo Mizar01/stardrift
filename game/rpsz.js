@@ -57,7 +57,7 @@ function camera_reset_position() {
     ace3.camera.cameraObj.rotation.z = 0
     ace3.camera.cameraObj.rotation.x = - Math.PI/3
     ace3.camera.pivot.position.set(0, 28, 16)
-    ace3.camera.speed = 0.1
+    ace3.camera.speed = 0.7
 }
 
 function game_init_map(map, demoMode) {
@@ -374,10 +374,12 @@ function menu_define() {
     box = new ACE3.HTMLBox("Choose Map", "", mOffset.x, mOffset.y, bw, bh, zIndex, fgColor, bgColor)
     box.addStyle(standardBoxStyle);
     chooseMapMenuManager.registerActor(box)
-    var mappedMaps = ["tick-tack-toe", "Flatlandia", "longway", "deepRoad"]
+    var mappedMaps = ["tick-tack-toe", "Flatlandia", "longway", "deepRoad","River"]
+    var varY = 0
     for (var i in mappedMaps) {
+        varY = box.y + 40 + i * 40
         var m = mappedMaps[i]
-        var mButton = new ACE3.HTMLButton(m, butX, box.y + 40 + i * 40, butW, 20, null, zIndex + 1, fgColor, bgColor)
+        var mButton = new ACE3.HTMLButton(m, butX, varY, butW, 20, null, zIndex + 1, fgColor, bgColor)
         mButton.addStyle(standardButtonStyle)
         mButton.mapLink = m
         var link = function(){game_play(this.mapLink)}
@@ -385,7 +387,7 @@ function menu_define() {
         // console.log(mButton)
         chooseMapMenuManager.registerActor(mButton)
     }
-    var  returnButton= new ACE3.HTMLButton("Cancel", butX, box.y + 200, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
+    var  returnButton= new ACE3.HTMLButton("Cancel", butX, varY + 40, butW, 20, function(){game_pause()}, zIndex + 1, fgColor, "red")
     returnButton.addStyle(standardButtonStyle)    
     chooseMapMenuManager.registerActor(returnButton)    
     ace3.actorManagerSet.push(chooseMapMenuManager)  

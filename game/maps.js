@@ -65,12 +65,14 @@ function loadMap(mapName) {
 
 
 	case "tick-tack-toe":
-		map_sectorsX=3;
-		map_sectorsY=3;
-		map_string= "fm-"+
-		            "-t-"+
-		            "--f";
-		game_spawn_units_array=new Array("p1,rock,0,0","p1,paper,0,0","p2,rock,2,2","p2,scissors,2,2");
+		map_sectorsX=5;
+		map_sectorsY=5;
+		map_string= "ft---"+
+		            "ttm--"+
+		            "-mmm-"+
+		            "--mtt"+
+		            "---tf";
+		game_spawn_units_array=new Array("p1,rock,0,0","p1,paper,0,1","p2,rock,4,4","p2,scissors,4,3");
 		break;
 	case "mini-map":
 		map_sectorsX=10;
@@ -137,8 +139,8 @@ function loadMap(mapName) {
 					"-mmmmmmmt---------tttt"+
 					"mmmmmmm----------ttfft"+
 					"mmmmmm------------tttt";
-		game_spawn_units_array=new Array(	"p1,rock,3,3","p1,paper,3,3","p1,rock,3,3","p1,scissors,3,3",
-											"p2,rock,17,13","p2,scissors,17,13");
+		game_spawn_units_array=new Array(	"p1,rock,3,3","p1,paper,3,4","p1,rock,4,3","p1,scissors,4,4",
+											"p2,rock,17,13","p2,scissors,16,13");
 		break;
 	case "Flatlandia" :
 		map_sectorsX=22;
@@ -156,8 +158,8 @@ function loadMap(mapName) {
 					"t----mmmmm----mmmm---t"+
 					"----------mmmm--------"+
 					"f--------------------f";
-		game_spawn_units_array=new Array(	"p1,rock,3,3","p1,paper,3,3","p1,rock,3,3","p1,scissors,3,3",
-											"p2,rock,17,12","p2,scissors,17,12");
+		game_spawn_units_array=new Array(	"p1,rock,3,3","p1,paper,3,4","p1,rock,4,3","p1,scissors,4,4",
+											"p2,rock,17,12","p2,scissors,16,12");
 		break;	
 	default:
 		//none
