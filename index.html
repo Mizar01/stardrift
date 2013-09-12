@@ -32,20 +32,39 @@
       <link href='http://fonts.googleapis.com/css?family=Finger+Paint' rel='stylesheet' type='text/css'>
       <link href='game/style.css' rel='stylesheet' type='text/css'>
       <script>
+
+        var facebookActive = false;
+        var gplusActive = false;
+        var twitterActive = false;
+
+
       	$(document).ready(function() {
    		    game_init()
 		      game_run()
 		    });
       </script>
+
+      <!-- SOCIAL JS SECTION -->
+
       <script>(function(d, s, id) {
         var js, fjs = d.getElementsByTagName(s)[0];
         if (d.getElementById(id)) return;
         js = d.createElement(s); js.id = id;
         js.src = "//connect.facebook.net/it_IT/all.js#xfbml=1&appId=441411502644807";
         fjs.parentNode.insertBefore(js, fjs);
-      }(document, 'script', 'facebook-jssdk'));</script>
+      }(document, 'script', 'facebook-jssdk'));
+      </script>
+
       <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
-      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+      </script>
+
+    
+      <!-- End of social Section -->
+
+
+
       <script id="fragmentShader2" type="x-shader/x-fragment">
               uniform vec2 resolution;
               uniform float time;
@@ -558,9 +577,14 @@
         <!--<source src='media/up1.mp3' type="audio/mpeg"/>-->
         Your Browser does not support HTML 5 Audio Element
       </audio>
+
+      <!-- GitHub Ribbon -->
       <a href="https://github.com/Mizar01/stardrift"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+      
+
+      <!-- Social Section-->
       <div id="fb-root"></div>
-      <div class="fb-like" data-href="http://developers.facebook.com/docs/reference/plugins/like" data-width="450" data-colorscheme="dark" data-layout="box_count" data-show-faces="true" data-send="true"
+      <div class="fb-like" data-href="http://mizar.3owl.com/STAR_DRIFT_1.0/index.html" data-width="450" data-colorscheme="dark" data-layout="box_count" data-show-faces="true" data-send="true"
       style="position: absolute; top: 200; right: 3%; border: 0;width: 106px;"></div>
       <div style="position: absolute; top: 350; right: 3%; border: 0;">
         <g:plusone></g:plusone>
@@ -568,5 +592,7 @@
       <div style="position: absolute; top: 400; right: 3%; border: 0;">
         <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en">Tweet</a>
       </div>
+      
+      <!-- end of social section-->
 </body>
 </html>
