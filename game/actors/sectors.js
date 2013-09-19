@@ -198,6 +198,9 @@ TowerSector.prototype.setPosition = function(x, y, z) {
     this.tower.adjustPosition(this)
 }
 
+/**
+* Flag sector are added to the scene without animation and management, for optimization purposes.
+**/
 FlagSector = function(posx, posy, sizex, sizey) {
     Sector.call(this,posx, posy, sizex, sizey)
     //overwrite properties of the default sector
@@ -245,18 +248,18 @@ MagneticSector = function(posx, posy, sizex, sizey) {
 }
 MagneticSector.extends(Sector, "MagneticSector")
 
-Flag = function(posx, posy) {
-    ACE3.Actor3D.call(this)
-    this.height = 0.3
-    this.obj = ACE3.Builder.cube2(0.1, this.height, 0.1, 0xffffff)
-    this.obj.rotation.x = Math.PI/2
-    this.obj.updateMatrix()
-    this.obj.translateY(this.height/2)
-}
-Flag.extends(ACE3.Actor3D, "Flag")
-Flag.prototype.setColor = function(color) {
-    this.obj.material.color = new THREE.Color(color)
-}
+// Flag = function(posx, posy) {
+//     ACE3.Actor3D.call(this)
+//     this.height = 0.3
+//     this.obj = ACE3.Builder.cube2(0.1, this.height, 0.1, 0xffffff)
+//     this.obj.rotation.x = Math.PI/2
+//     this.obj.updateMatrix()
+//     this.obj.translateY(this.height/2)
+// }
+// Flag.extends(ACE3.Actor3D, "Flag")
+// Flag.prototype.setColor = function(color) {
+//     this.obj.material.color = new THREE.Color(color)
+// }
 
 
 Spawner = function(sizex, sizey) {

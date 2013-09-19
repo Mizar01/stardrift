@@ -40,6 +40,7 @@
 
       	$(document).ready(function() {
    		    game_init()
+          $("#_ace3_container").css({"border":"2px solid blue", "border-radius":"5px"});
 		      game_run()
 		    });
       </script>
@@ -253,9 +254,9 @@
                 vec2 p = -1.0 + 2.0 * vUv; // coords with 0,0 in the middle of the material (limits -1 and 1)
                 float distP2 = sqrt(p.x * p.x + p.y * p.y);
 
-                c = vec3(abs(sin(angle)) * 0.3, 1.0/(distP2 * 3.0), abs(cos(angle)) * 0.3);
-                
-                float opacity = 1.0;
+                c = vec3(abs(sin(angle)) * 0.5, 0.2/(distP2 * 3.0), abs(cos(angle)) * 0.1);
+
+                float opacity = 0.7;
                 //if (opacity > 1.0) {
                 //  opacity = 1.0;
                 //}
@@ -451,14 +452,26 @@
                   //alter the cut-off power
                   float col = pow(metaball, 5.0);
 
+                  float c1;
+                  float c2;
+                  float c3;
+
                   //set the output color
-                  if (col < 0.6) {
-                    gl_FragColor = vec4(col * rgbMult.x, 
-                                        max(0.1, col * 5.0) * rgbMult.y, 
-                                        col * rgbMult.z, 1.);
+                  if (col < 0.3) {
+                    c1 = col * rgbMult.x;
+                    c2 = max(0.1, col * 5.0) * rgbMult.y;
+                    c3 = col * rgbMult.z;
                   }else {
-                    gl_FragColor = vec4(col * rgbMult.x, col/2.0 * rgbMult.y, 0.0, 1.0);
+                    c1 = col * rgbMult.x;
+                    c2 = col/2.0 * rgbMult.y;
+                    c3 = 0.0;
                   }
+
+                 //if the color is too dark it becomes dark yellow
+                 if (c1 < 0.05 && c2 < 0.05 && c3 < 0.05) {
+                    c1 = 0.1; c2 = 0.1; c3 = 0.0;
+                 }
+                 gl_FragColor = vec4(c1, c2, c3, 1.);
               }
 
 
@@ -484,6 +497,7 @@
                  float c1 = abs(sin(mov1+time)/2.+mov2/2.-mov1-mov2+time);
                  float c2 = abs(sin(c1+sin(mov0/1000.+time)+sin(yr/40.+time)+sin((xr+yr)/100.)*3.));
                  float c3 = abs(sin(c2+cos(mov1+mov2+c2)+cos(mov2)+sin(xr/1000.)));
+
                  gl_FragColor = vec4( c1 ,c2 ,c3 / 2., 1.0);
               }
 
