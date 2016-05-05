@@ -1,4 +1,5 @@
 body {
 	font-family: "Finger Paint";
 	background-color: #111101;
+	transform: translate3d(0,0,0);
 }
